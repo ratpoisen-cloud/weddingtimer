@@ -275,4 +275,28 @@
     let count = parseInt(localStorage.getItem('v3_katya')) || 0;
     if (!sessionStorage.getItem('v3_active')) {
         count++;
-        localStorage.setItem('v
+        localStorage.setItem('v3_katya', count);
+        sessionStorage.setItem('v3_active', '1');
+    }
+    document.getElementById('visits').textContent = count;
+
+    // Дождь из колец
+    window.addEventListener('mousemove', function(e) {
+        if (Math.random() > 0.90) {
+            const ring = document.createElement('div');
+            ring.className = 'ring-particle';
+            ring.innerHTML = '💍';
+            ring.style.left = e.clientX + 'px';
+            ring.style.top = e.clientY + 'px';
+            document.body.appendChild(ring);
+            setTimeout(() => ring.remove(), 1800);
+        }
+    });
+
+    // Запуск
+    setInterval(updateCounter, 1000);
+    updateCounter();
+</script>
+
+</body>
+</html>
