@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Счетчик ожидания</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Lora:ital,wght@0,400;1,400;1,600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #d4af37;
+            --deep-blue: #0a1128;
+            --royal-purple: #1c0a2e;
+            --text-light: #f1f1f1;
+            --text-muted: #8e9aaf;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: default;
+        }
+
+        body {
+            background: radial-gradient(circle at top, var(--royal-purple), var(--deep-blue));
+            background-attachment: fixed;
+            color: var(--text-light);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            padding: 40px 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Заголовок с акцентом на автора */
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .apostle-title {
+            font-family: 'Lora', serif;
+            font-weight: 600;
+            font-style: italic;
+            font-size: 2.2em;
+            color: var(--gold);
+            display: block;
+            margin-bottom: 5px;
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+        }
+
+        .scripture-ref {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-size: 0.8em;
+            display: block;
+            margin-bottom: 30px;
+        }
+
+        .bible-quote {
+            font-family: 'Lora', serif;
+            font-size: 1.4em;
+            font-style: italic;
+            line-height: 1.6;
+            color: #ffffff;
+            border-left: 2px solid var(--gold);
+            padding: 10px 25px;
+            background: rgba(212, 175, 55, 0.03);
+            margin: 0 auto;
+        }
+
+        /* Счетчик */
+        .counter-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(15px);
+            padding: 40px 20px;
+            border-radius: 24px;
+            text-align: center;
+            margin: 40px 0;
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        .counter-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            margin-bottom: 30px;
+        }
+
+        .unit-value {
+            font-size: 3em;
+            font-weight: 300;
+            color: #ffffff;
+            display: block;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .unit-label {
+            font-size: 0.7em;
+            text-transform: uppercase;
+            color: var(--gold);
+            letter-spacing: 2px;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: inline-block;
+            color: var(--gold);
+            padding: 10px 30px;
+            border: 1px solid var(--gold);
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        /* Полезные ссылки */
+        .links-section {
+            margin: 30px 0;
+        }
+
+        .resource-item {
+            display: block;
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 18px;
+            font-size: 0.95em;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .resource-item:hover {
+            color: var(--gold);
+            background: rgba(212, 175, 55, 0.05);
+            padding-left: 30px;
+        }
+
+        /* Блок визитов (внизу) */
+        .visit-footer {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            margin-top: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .visit-text {
+            color: var(--text-muted);
+            font-size: 0.75em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .visit-num {
+            font-size: 2.2em;
+            color: var(--gold);
+            font-weight: 600;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: rgba(255, 255, 255, 0.1);
+            font-size: 0.7em;
+            letter-spacing: 5px;
+        }
+
+        /* Кольца */
+        .ring-particle {
+            position: fixed;
+            pointer-events: none;
+            font-size: 24px;
+            z-index: 9999;
+            filter: drop-shadow(0 0 5px rgba(212, 175, 55, 0.5));
+            animation: ringFloat 2s linear forwards;
+        }
+
+        @keyframes ringFloat {
+            0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+            100% { transform: translate(20px, 80px) rotate(360deg); opacity: 0; }
+        }
+
+        @media (max-width: 500px) {
+            .unit-value { font-size: 2em; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <span class="apostle-title">Апостол Павел</span>
+        <span class="scripture-ref">1-ое послание к Коринфянам 7:2</span>
+        <div class="bible-quote">
+            «Во избежание блуда, каждый имей свою жену, и каждая имей своего мужа».
+        </div>
+    </header>
+
+    <div class="counter-card">
+        <div class="counter-grid">
+            <div>
+                <span id="days" class="unit-value">0</span>
+                <span class="unit-label">дней</span>
+            </div>
+            <div>
+                <span id="hours" class="unit-value">00</span>
+                <span class="unit-label">часов</span>
+            </div>
+            <div>
+                <span id="minutes" class="unit-value">00</span>
+                <span class="unit-label">минут</span>
+            </div>
+            <div>
+                <span id="seconds" class="unit-value">00</span>
+                <span class="unit-label">секунд</span>
+            </div>
+        </div>
+        <div class="status-badge">Без предложения</div>
+    </div>
+
+    <div class="links-section">
+        <a href="https://azbyka.ru/brak" target="_blank" class="resource-item">→ Духовный путь к супружеству</a>
+        <a href="https://www.pravmir.ru/venchanie/" target="_blank" class="resource-item">→ Таинство венчания: подготовка</a>
+        <a href="https://www.zolotoyvek.ru/articles/kak-vybrat-obruchalnoe-koltso/" target="_blank" class="resource-item">→ Каталог обручальных колец</a>
+        <a href="https://www.wedding.ru/guide/engagement/ideas/" target="_blank" class="resource-item">→ Регламент предложения</a>
+    </div>
+
+    <div class="visit-footer">
+        <span class="visit-text">Визиты Екатерины:</span>
+        <span id="visits" class="visit-num">0</span>
+    </div>
+
+    <footer>MEMENTO MORI</footer>
+</div>
+
+<script>
+    // Точная дата начала отсчета: 21 августа 2025
+    // Используем конструктор (год, месяц-1, день) для надежности
+    const startDate = new Date(2025, 7, 21, 0, 0, 0).getTime();
+
+    function updateCounter() {
+        const now = new Date().getTime();
+        const diff = now - startDate; // Считаем сколько ПРОШЛО
+
+        if (diff > 0) {
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            document.getElementById("days").textContent = days;
+            document.getElementById("hours").textContent = hours.toString().padStart(2, '0');
+            document.getElementById("minutes").textContent = minutes.toString().padStart(2, '0');
+            document.getElementById("seconds").textContent = seconds.toString().padStart(2, '0');
+        } else {
+            // Если дата еще не наступила, показываем нули
+            document.querySelectorAll('.unit-value').forEach(el => el.textContent = '00');
+        }
+    }
+
+    // Счетчик посещений
+    let count = parseInt(localStorage.getItem('v3_katya')) || 0;
+    if (!sessionStorage.getItem('v3_active')) {
+        count++;
+        localStorage.setItem('v
