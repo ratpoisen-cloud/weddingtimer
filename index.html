@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Счетчик ожидания</title>
+    <title>Метрика ожидания</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Lora:ital,wght@0,400;1,400;1,600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -19,6 +19,7 @@
             padding: 0;
             box-sizing: border-box;
             cursor: default;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -29,6 +30,7 @@
             min-height: 100vh;
             padding: 40px 20px;
             overflow-x: hidden;
+            touch-action: manipulation;
         }
 
         .container {
@@ -38,7 +40,6 @@
             z-index: 10;
         }
 
-        /* Заголовок с акцентом на автора */
         header {
             text-align: center;
             margin-bottom: 50px;
@@ -77,7 +78,6 @@
             margin: 0 auto;
         }
 
-        /* Счетчик */
         .counter-card {
             background: rgba(255, 255, 255, 0.02);
             backdrop-filter: blur(15px);
@@ -123,7 +123,6 @@
             font-weight: 600;
         }
 
-        /* Полезные ссылки */
         .links-section {
             margin: 30px 0;
         }
@@ -145,7 +144,6 @@
             padding-left: 30px;
         }
 
-        /* Блок визитов (внизу) */
         .visit-footer {
             background: rgba(0, 0, 0, 0.2);
             padding: 30px;
@@ -178,23 +176,24 @@
             letter-spacing: 5px;
         }
 
-        /* Кольца */
         .ring-particle {
             position: fixed;
             pointer-events: none;
             font-size: 24px;
             z-index: 9999;
             filter: drop-shadow(0 0 5px rgba(212, 175, 55, 0.5));
-            animation: ringFloat 2s linear forwards;
+            animation: ringFloat 1.5s linear forwards;
         }
 
         @keyframes ringFloat {
             0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
-            100% { transform: translate(20px, 80px) rotate(360deg); opacity: 0; }
+            100% { transform: translate(20px, 100px) rotate(360deg); opacity: 0; }
         }
 
         @media (max-width: 500px) {
-            .unit-value { font-size: 2em; }
+            .unit-value { font-size: 1.8em; }
+            .counter-grid { gap: 5px; }
+            .apostle-title { font-size: 1.8em; }
         }
     </style>
 </head>
@@ -247,13 +246,11 @@
 </div>
 
 <script>
-    // Точная дата начала отсчета: 21 августа 2025
-    // Используем конструктор (год, месяц-1, день) для надежности
     const startDate = new Date(2025, 7, 21, 0, 0, 0).getTime();
 
     function updateCounter() {
         const now = new Date().getTime();
-        const diff = now - startDate; // Считаем сколько ПРОШЛО
+        const diff = now - startDate;
 
         if (diff > 0) {
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -265,35 +262,45 @@
             document.getElementById("hours").textContent = hours.toString().padStart(2, '0');
             document.getElementById("minutes").textContent = minutes.toString().padStart(2, '0');
             document.getElementById("seconds").textContent = seconds.toString().padStart(2, '0');
-        } else {
-            // Если дата еще не наступила, показываем нули
-            document.querySelectorAll('.unit-value').forEach(el => el.textContent = '00');
         }
     }
 
-    // Счетчик посещений
-    let count = parseInt(localStorage.getItem('v3_katya')) || 0;
-    if (!sessionStorage.getItem('v3_active')) {
+    // Посещения
+    let count = parseInt(localStorage.getItem('v4_katya')) || 0;
+    if (!sessionStorage.getItem('v4_active')) {
         count++;
-        localStorage.setItem('v3_katya', count);
-        sessionStorage.setItem('v3_active', '1');
+        localStorage.setItem('v4_katya', count);
+        sessionStorage.setItem('v4_active', '1');
     }
     document.getElementById('visits').textContent = count;
 
-    // Дождь из колец
-    window.addEventListener('mousemove', function(e) {
-        if (Math.random() > 0.90) {
-            const ring = document.createElement('div');
-            ring.className = 'ring-particle';
-            ring.innerHTML = '💍';
-            ring.style.left = e.clientX + 'px';
-            ring.style.top = e.clientY + 'px';
-            document.body.appendChild(ring);
-            setTimeout(() => ring.remove(), 1800);
+    // Универсальная функция кольца
+    function createRing(x, y) {
+        const ring = document.createElement('div');
+        ring.className = 'ring-particle';
+        ring.innerHTML = '💍';
+        ring.style.left = x + 'px';
+        ring.style.top = y + 'px';
+        document.body.appendChild(ring);
+        setTimeout(() => ring.remove(), 1500);
+    }
+
+    // Движение мыши
+    window.addEventListener('mousemove', (e) => {
+        if (Math.random() > 0.90) createRing(e.clientX, e.clientY);
+    });
+
+    // Мобильное касание
+    window.addEventListener('touchmove', (e) => {
+        if (Math.random() > 0.85) {
+            const touch = e.touches[0];
+            createRing(touch.clientX, touch.clientY);
         }
     });
 
-    // Запуск
+    // Одиночный тап/клик
+    window.addEventListener('mousedown', (e) => createRing(e.clientX, e.clientY));
+
     setInterval(updateCounter, 1000);
     updateCounter();
 </script>
