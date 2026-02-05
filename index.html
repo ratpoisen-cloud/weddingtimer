@@ -3,8 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Метрика ожидания</title>
+    
+    <title>Время действовать</title>
+    <meta name="description" content="Каждая секунда — это возможность сделать шаг навстречу будущему.">
+    
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Пора делать предложение">
+    <meta property="og:description" content="Счетчик времени, прошедшего с 21 августа 2025 года. Хватит ждать — пора действовать.">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?q=80&w=2070&auto=format&fit=crop">
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💍</text></svg>">
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Lora:ital,wght@0,400;1,400;1,600&display=swap" rel="stylesheet">
+    
     <style>
         :root {
             --gold: #d4af37;
@@ -38,6 +49,48 @@
             margin: 0 auto;
             position: relative;
             z-index: 10;
+        }
+
+        .settings-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 100;
+            opacity: 0.3;
+            transition: opacity 0.3s;
+        }
+        .settings-toggle:hover { opacity: 1; }
+
+        #settings-panel {
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            text-align: center;
+        }
+
+        input[type="datetime-local"] {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--gold);
+            color: white;
+            padding: 8px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .btn-save {
+            background: var(--gold);
+            color: var(--deep-blue);
+            border: none;
+            padding: 8px 20px;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
         }
 
         header {
@@ -96,10 +149,9 @@
         }
 
         .unit-value {
-            font-size: 3em;
+            font-size: 3.2em;
             font-weight: 300;
             color: #ffffff;
-            display: block;
             font-variant-numeric: tabular-nums;
         }
 
@@ -114,13 +166,14 @@
         .status-badge {
             display: inline-block;
             color: var(--gold);
-            padding: 10px 30px;
+            padding: 12px 35px;
             border: 1px solid var(--gold);
-            border-radius: 4px;
+            border-radius: 50px;
             text-transform: uppercase;
-            letter-spacing: 5px;
-            font-size: 0.85em;
+            letter-spacing: 4px;
+            font-size: 0.9em;
             font-weight: 600;
+            background: rgba(212, 175, 55, 0.05);
         }
 
         .links-section {
@@ -132,10 +185,13 @@
             color: var(--text-muted);
             text-decoration: none;
             padding: 18px;
-            font-size: 0.95em;
+            font-size: 1em;
             border-bottom: 1px solid rgba(212, 175, 55, 0.1);
             transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .resource-item:last-child {
+            border-bottom: none;
         }
 
         .resource-item:hover {
@@ -150,16 +206,6 @@
             border-radius: 16px;
             text-align: center;
             margin-top: 50px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .visit-text {
-            color: var(--text-muted);
-            font-size: 0.75em;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 8px;
-            display: block;
         }
 
         .visit-num {
@@ -168,20 +214,11 @@
             font-weight: 600;
         }
 
-        footer {
-            text-align: center;
-            margin-top: 40px;
-            color: rgba(255, 255, 255, 0.1);
-            font-size: 0.7em;
-            letter-spacing: 5px;
-        }
-
         .ring-particle {
             position: fixed;
             pointer-events: none;
             font-size: 24px;
             z-index: 9999;
-            filter: drop-shadow(0 0 5px rgba(212, 175, 55, 0.5));
             animation: ringFloat 1.5s linear forwards;
         }
 
@@ -192,14 +229,22 @@
 
         @media (max-width: 500px) {
             .unit-value { font-size: 1.8em; }
-            .counter-grid { gap: 5px; }
             .apostle-title { font-size: 1.8em; }
         }
     </style>
 </head>
 <body>
 
+<div class="settings-toggle" onclick="toggleSettings()">⚙️</div>
+
 <div class="container">
+    <div id="settings-panel">
+        <h3 style="font-size: 0.8em; color: var(--gold);">Настроить дату события</h3>
+        <input type="datetime-local" id="dateInput">
+        <br>
+        <button class="btn-save" onclick="saveDate()">Сохранить</button>
+    </div>
+
     <header>
         <span class="apostle-title">Апостол Павел</span>
         <span class="scripture-ref">1-ое послание к Коринфянам 7:2</span>
@@ -211,19 +256,19 @@
     <div class="counter-card">
         <div class="counter-grid">
             <div>
-                <span id="days" class="unit-value">0</span>
+                <span id="days" class="unit-value">0</span><br>
                 <span class="unit-label">дней</span>
             </div>
             <div>
-                <span id="hours" class="unit-value">00</span>
+                <span id="hours" class="unit-value">00</span><br>
                 <span class="unit-label">часов</span>
             </div>
             <div>
-                <span id="minutes" class="unit-value">00</span>
+                <span id="minutes" class="unit-value">00</span><br>
                 <span class="unit-label">минут</span>
             </div>
             <div>
-                <span id="seconds" class="unit-value">00</span>
+                <span id="seconds" class="unit-value">00</span><br>
                 <span class="unit-label">секунд</span>
             </div>
         </div>
@@ -231,78 +276,75 @@
     </div>
 
     <div class="links-section">
-        <a href="https://azbyka.ru/brak" target="_blank" class="resource-item">→ Духовный путь к супружеству</a>
-        <a href="https://www.pravmir.ru/venchanie/" target="_blank" class="resource-item">→ Таинство венчания: подготовка</a>
-        <a href="https://www.zolotoyvek.ru/articles/kak-vybrat-obruchalnoe-koltso/" target="_blank" class="resource-item">→ Каталог обручальных колец</a>
-        <a href="https://www.wedding.ru/guide/engagement/ideas/" target="_blank" class="resource-item">→ Регламент предложения</a>
+        <a href="https://www.pravmir.ru/venchanie/" target="_blank" class="resource-item">→ Порядок проведения таинства венчания</a>
+        <a href="https://www.tiffany.ru/engagement/engagement-rings/" target="_blank" class="resource-item">→ Выбрать идеальное кольцо для помолвки</a>
     </div>
 
     <div class="visit-footer">
-        <span class="visit-text">Визиты Екатерины:</span>
+        <span style="color: var(--text-muted); font-size: 0.8em; text-transform: uppercase;">Екатерина следит за временем:</span><br>
         <span id="visits" class="visit-num">0</span>
     </div>
 
-    <footer>MEMENTO MORI</footer>
+    <footer style="text-align: center; margin-top: 40px; color: rgba(255,255,255,0.05); font-size: 0.6em; letter-spacing: 5px;">MEMENTO MORI</footer>
 </div>
 
 <script>
-    const startDate = new Date(2025, 7, 21, 0, 0, 0).getTime();
+    let defaultDate = new Date(2025, 7, 21, 0, 0, 0).getTime();
+    let userDate = localStorage.getItem('userSetDate_vFinal');
+    let startDate = userDate ? parseInt(userDate) : defaultDate;
 
-    function updateCounter() {
-        const now = new Date().getTime();
-        const diff = now - startDate;
+    function toggleSettings() {
+        const panel = document.getElementById('settings-panel');
+        panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+    }
 
+    function saveDate() {
+        const val = document.getElementById('dateInput').value;
+        if (val) {
+            const time = new Date(val).getTime();
+            localStorage.setItem('userSetDate_vFinal', time);
+            startDate = time;
+            toggleSettings();
+            update();
+        }
+    }
+
+    function update() {
+        const diff = new Date().getTime() - startDate;
         if (diff > 0) {
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-            document.getElementById("days").textContent = days;
-            document.getElementById("hours").textContent = hours.toString().padStart(2, '0');
-            document.getElementById("minutes").textContent = minutes.toString().padStart(2, '0');
-            document.getElementById("seconds").textContent = seconds.toString().padStart(2, '0');
+            document.getElementById("days").textContent = Math.floor(diff / 86400000);
+            document.getElementById("hours").textContent = Math.floor((diff % 86400000) / 3600000).toString().padStart(2, '0');
+            document.getElementById("minutes").textContent = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
+            document.getElementById("seconds").textContent = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+        } else {
+            document.querySelectorAll('.unit-value').forEach(el => el.textContent = '00');
         }
     }
 
-    // Посещения
-    let count = parseInt(localStorage.getItem('v4_katya')) || 0;
-    if (!sessionStorage.getItem('v4_active')) {
-        count++;
-        localStorage.setItem('v4_katya', count);
-        sessionStorage.setItem('v4_active', '1');
+    let vCount = parseInt(localStorage.getItem('v_total_vFinal')) || 0;
+    if (!sessionStorage.getItem('v_session_vFinal')) {
+        vCount++;
+        localStorage.setItem('v_total_vFinal', vCount);
+        sessionStorage.setItem('v_session_vFinal', '1');
     }
-    document.getElementById('visits').textContent = count;
+    document.getElementById('visits').textContent = vCount;
 
-    // Универсальная функция кольца
     function createRing(x, y) {
-        const ring = document.createElement('div');
-        ring.className = 'ring-particle';
-        ring.innerHTML = '💍';
-        ring.style.left = x + 'px';
-        ring.style.top = y + 'px';
-        document.body.appendChild(ring);
-        setTimeout(() => ring.remove(), 1500);
+        const r = document.createElement('div');
+        r.className = 'ring-particle';
+        r.innerHTML = '💍';
+        r.style.left = x + 'px';
+        r.style.top = y + 'px';
+        document.body.appendChild(r);
+        setTimeout(() => r.remove(), 1500);
     }
 
-    // Движение мыши
-    window.addEventListener('mousemove', (e) => {
-        if (Math.random() > 0.90) createRing(e.clientX, e.clientY);
-    });
-
-    // Мобильное касание
-    window.addEventListener('touchmove', (e) => {
-        if (Math.random() > 0.85) {
-            const touch = e.touches[0];
-            createRing(touch.clientX, touch.clientY);
-        }
-    });
-
-    // Одиночный тап/клик
+    window.addEventListener('mousemove', (e) => { if (Math.random() > 0.92) createRing(e.clientX, e.clientY); });
+    window.addEventListener('touchmove', (e) => { if (Math.random() > 0.88) createRing(e.touches[0].clientX, e.touches[0].clientY); });
     window.addEventListener('mousedown', (e) => createRing(e.clientX, e.clientY));
 
-    setInterval(updateCounter, 1000);
-    updateCounter();
+    setInterval(update, 1000);
+    update();
 </script>
 
 </body>
